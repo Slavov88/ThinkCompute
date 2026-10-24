@@ -1,0 +1,8 @@
+{
+  "lean_executable": "/path/to/lean-toolchain/bin/lean",
+  "lake_executable": "/path/to/lean-toolchain/bin/lake",
+  "project_root": "/path/to/mathlib-project",
+  "toolchain": "leanprover/lean4:v4.33.1",
+  "mathlib_tag": "v4.33.1",
+  "mathlib_revision": "<mathlib commit>"
+}
