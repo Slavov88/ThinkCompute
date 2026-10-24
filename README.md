@@ -18,9 +18,10 @@ JSON action (schema in `config/action_schema.json`):
 
 The broker validates each action against the active policy, executes permitted payloads,
 returns bounded output to the next round, and logs every externally consequential event.
-Terminal success is decided by the harness, never by the model: the verifier rebuilds the
-immutable theorem statement, rejects statement changes, placeholders and disallowed
-declarations, and accepts only if Lean compiles the candidate.
+Success is decided by the harness, never by the model. A `LEAN` action that compiles ends
+the session. When the round budget runs out, an independent verifier re-checks the latest
+candidate: it rebuilds the immutable theorem statement, rejects statement changes,
+placeholders and disallowed declarations, and accepts only if Lean compiles the candidate.
 
 The resource ledger records:
 
@@ -53,10 +54,14 @@ examples/     runnable mock session
 tests/        unit tests
 ```
 
+Run a real session with `python -m harness.session` (see "Run a session").
+
 Main modules: `broker.py` (round loop), `controller.py` (policy state machine),
 `action_schema.py` (strict action parsing), `verifier.py` (terminal check),
-`native_worker.py` and `docker_worker.py` (restricted tool workers), `benchmark.py`
-(problem directory loader), `model_base.py` (model adapter interface).
+`final_verifier.py` (terminal verifier for the broker), `native_worker.py` and
+`docker_worker.py` (restricted tool workers), `benchmark.py` (problem directory loader),
+`session.py` (command line and session runner), `model_codex.py` and `model_openai.py`
+(model adapters).
 
 ## Requirements
 
@@ -69,12 +74,36 @@ Main modules: `broker.py` (round loop), `controller.py` (policy state machine),
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate        # Windows: .venv\Scriptsctivate
 pip install -r requirements.txt
 
+python -m harness.session --check            # shows what is available: Lean, Codex CLI, API key
 python examples/mock_run.py                  # full session with a scripted model, no Lean needed
 python -m unittest discover -s tests -t .    # tests that need Lean are skipped when it is absent
 ```
+
+## Run a session
+
+```bash
+# OpenAI-compatible endpoint: set OPENAI_API_KEY (use --base-url for other providers)
+python -m harness.session --lean-file path/to/Main.lean --statement-file path/to/problem.md     --model openai:<model-name> --policy A2 --n 8 --t 10 --v 6
+
+# Codex CLI (installed and logged in)
+python -m harness.session --lean-file path/to/Main.lean --model codex:<model-name> --policy A4
+
+# a problem directory with a manifest
+python -m harness.session --benchmark DIR --problem-id ID --model openai:<model-name>
+
+# smoke test with no model or key; needs Lean, and the target must be a proof of `True`
+python -m harness.session --lean-file path/to/Main.lean --model mock
+```
+
+Each session writes `results/sessions/<run_id>.json` (the ledger and per-round trace) and
+`results/sessions/<run_id>.events.jsonl` (broker and tool events). Failed model calls are
+not retried: the session is recorded with `status: infrastructure_error` and the error.
+`--policy` takes `A0` to `A4`; `--n`, `--t` and `--v` set the neural rounds, deterministic
+seconds and intermediate Lean attempts. The command line uses the native worker;
+`DockerToolWorker` is available as a building block for container isolation.
 
 ## Connect Lean
 
@@ -102,14 +131,16 @@ theorem target : <statement> := by
 end TC_0123ABCD
 ```
 
-The verifier replaces the `by` / `sorry` placeholder with the candidate proof body.
+The placeholder must be exactly `by`, a newline, two spaces and `sorry`, once. The verifier
+replaces it with the candidate proof body.
 
 ## Use your own model
 
-Implement `invoke_once(prompt, *, scratch, timeout)` returning a `RoundResponse`
-(`harness/broker.py`) and pass it as `model` to `run_broker`. `ScriptedMockModel` in
-`harness/model_mock.py` is a minimal reference. `harness/model_base.py` defines the
-adapter base class for single-call runs.
+Built in: `model_openai.py` (any OpenAI-compatible chat completions endpoint, standard
+library only) and `model_codex.py` (one fresh Codex CLI process per round). For another
+provider, implement `invoke_once(prompt, *, scratch, timeout)` returning a `RoundResponse`
+(`harness/broker.py`) and pass it as `model` to `run_broker` or `run_session`.
+`ScriptedMockModel` in `harness/model_mock.py` is a minimal reference.
 
 ```python
 from harness.broker import BrokerConfig, run_broker
