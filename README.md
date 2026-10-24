@@ -74,7 +74,7 @@ Main modules: `broker.py` (round loop), `controller.py` (policy state machine),
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scriptsctivate
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 python -m harness.session --check            # shows what is available: Lean, Codex CLI, API key
