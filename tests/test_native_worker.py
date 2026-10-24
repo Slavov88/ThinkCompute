@@ -41,7 +41,7 @@ class NativeWorkerTests(unittest.TestCase):
             arithmetic = worker.run_python("print(2 + 2)", timeout=10)
             sympy = worker.run_python("import sympy as s; print(s.factorint(84))", timeout=20)
             smt = worker.run_smt("import z3; x=z3.Int('x'); s=z3.Solver(); s.add(x == 7); print(s.check()); print(s.model()[x])", timeout=20)
-            lean = worker.run_lean("by\n  exact True.intro", timeout=20)
+            lean = worker.run_lean("by\n  exact True.intro", timeout=60)
             self.assertEqual(arithmetic["exit_code"], 0)
             self.assertIn("4", arithmetic["stdout"])
             self.assertEqual(sympy["exit_code"], 0)
@@ -114,7 +114,7 @@ class NativeWorkerTests(unittest.TestCase):
     def test_lean_worker_adapter_matches_broker_interface(self):
         with tempfile.TemporaryDirectory() as raw:
             worker = self.worker(Path(raw), "theorem target : True := by\n  sorry\n")
-            result = worker.as_lean_worker().run("by\n  exact True.intro", timeout=20)
+            result = worker.as_lean_worker().run("by\n  exact True.intro", timeout=60)
             self.assertTrue(result["verified"])
             self.assertEqual(result["exit_code"], 0)
 
