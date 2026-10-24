@@ -172,3 +172,10 @@ docker build -f container/Dockerfile \
 The native worker is a capability filter and process wrapper, not an operating-system
 security boundary. When isolation from the host matters, run the whole process in a
 restricted account, VM or container.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See `LICENSE` and `NOTICE`.
+
+Dependencies keep their own licenses: SymPy (BSD) and Z3 (MIT) are installed from PyPI, and
+Lean and Mathlib (Apache-2.0) are installed separately and are not part of this repository.
