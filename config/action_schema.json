@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["action", "summary", "compute_useful", "payload", "state_update", "confidence"],
+  "properties": {
+    "action": {"type": "string", "enum": ["THINK", "PYTHON", "SMT", "LEAN"]},
+    "summary": {"type": "string", "maxLength": 24000},
+    "compute_useful": {"type": "boolean"},
+    "payload": {"type": "string", "maxLength": 24000},
+    "state_update": {"type": "string", "maxLength": 24000},
+    "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+  }
+}

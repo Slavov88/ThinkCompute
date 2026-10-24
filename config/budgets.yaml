@@ -1,0 +1,7 @@
+# Defaults mirrored by harness.broker.BrokerConfig and harness.budgets.Budget.
+n_limit: 4                     # neural rounds (N)
+t_limit_seconds: 60            # deterministic compute budget (T)
+deterministic_call_limit_seconds: 30
+v_intermediate_limit: 6        # intermediate Lean attempts (V)
+lean_process_limit_seconds: 60
+max_session_seconds: 600

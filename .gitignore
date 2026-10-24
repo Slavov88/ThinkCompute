@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+results/
+scratch/
+config/verifier_environment.json
